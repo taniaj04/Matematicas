@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulacro Fracciones</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>¡Bienvenido!</h1>
+        <h2>Grafiquemos Fracciones Propias</h2>
+        <p>Una fracción propia tiene un numerador menor que el denominador.</p>
+        <p>Las fracciones propias son útiles para representar partes de un todo. Ejemplos:</p>
+        
+        <div class="fraction-examples">
+            <div class="fraction">
+                <div class="numerator">1</div>
+                <div class="fraction-line"></div>
+                <div class="denominator">2</div>
+            </div>
+            <div class="fraction">
+                <div class="numerator">3</div>
+                <div class="fraction-line"></div>
+                <div class="denominator">15</div>
+            </div>
+            <div class="fraction">
+                <div class="numerator">5</div>
+                <div class="fraction-line"></div>
+                <div class="denominator">10</div>
+            </div>
+            <div class="fraction">
+                <div class="numerator">7</div>
+                <div class="fraction-line"></div>
+                <div class="denominator">8</div>
+            </div>
+        </div>
+
+        <p>Para graficar una fracción, primero elige una figura que represente la unidad, luego divídela según el denominador y colorea según el numerador.</p>
+        <button id="boton-sonido">Empezar juego</button>
+        <audio id="sonido-boton" src="sonido.mp3"></audio>
+
+<script>
+    const boton = document.getElementById('boton-sonido');
+    const sonido = document.getElementById('sonido-boton');
+
+    boton.addEventListener('click', () => {
+        sonido.currentTime = 0; // Reinicia el sonido cada vez
+        sonido.play();
+
+        sonido.onended = () => {
+            window.location.href = 'juego.html';
+        };
+    });
+</script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Juguemos!</title>
+    <link rel="stylesheet" href="estilo.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <button class="exit-button" onclick="goToHome()">Salir del juego</button>
+        <h1>Grafica la siguiente fracción propia:</h1>
+
+        <div id="fractionDisplay" class="fraction-display" style="color: #445e77; font-size: 1.5em;"></div>
+
+        <div class="instructions">
+            <h2>Para empezar selecciona la figura geométrica:</h2>
+            <div class="figure-selection">
+                <div class="figure circle" onclick="selectFigure('circle')"></div>
+                <div class="figure square" onclick="selectFigure('square')"></div>
+                <div class="figure triangle" onclick="selectFigure('triangle')"></div>
+            </div>
+        </div>
+
+        <div id="figureDisplay" class="figure-display" style="display: none;">
+            <h2>Ahora divide según el denominador</h2>
+            <p>¿En cuántas partes quieres dividir la figura?</p>
+            <div id="selectedFigure" class="figure"></div>
+            <input type="number" id="denominator" style="width: 200px; height: 25px; padding: 3px; border: 2px solid #0056b3; background-color: #9ac8f06c; border-radius: 5px;" placeholder="Número de partes" min="1">
+            <button class="button" onclick="divideFigure()">Dividir</button>
+        </div>
+
+        <div id="dividedFigure" class="figure-display" style="display: none;">
+            <h2>Y por último, colorea según el numerador</h2>
+            <p>Haz clic en las partes que debes colorear.</p>
+            <div id="gridContainer" class="figure-grid"></div>
+            <div class="button-container">
+                <button class="button verify" onclick="verify()">Verificar</button>
+                <button class="button restart" onclick="restartGame()">Volver a empezar</button>
+            </div>
+        </div>
+
+        <script>
+            let selectedFigure = '';
+            let randomFraction = { numerator: 0, denominator: 0 };
+            let attempts = 0;
+            const clickSound = new Audio('seleccion.mp3'); // Cambia 'seleccion.mp3' por la ruta de tu archivo de sonido
+            const divideSound = new Audio('dividir.mp3'); // Cambia 'divide.mp3' por la ruta del sonido para el botón "Dividir"
+            const colorSound = new Audio('colorear.mp3'); // Sonido para colorear partes
+            const restartSound = new Audio('sonido.mp3'); // Sonido para "Volver a empezar"
+            const correctSound = new Audio('correcto.mp3'); // Sonido para respuesta correcta
+            const incorrectSound = new Audio('incorrecto.mp3'); // Sonido para respuesta incorrecta
+            const exitSound = new Audio('sonido.mp3'); // Sonido para el botón "Salir del juego"
+        
+            generateRandomFraction();
+        
+            function generateRandomFraction() {
+                let denominator;
+                do {
+                    denominator = Math.floor(Math.random() * 9) + 2;
+                } while (denominator <= 1);
+        
+                const numerator = Math.floor(Math.random() * (denominator - 1)) + 1;
+                randomFraction = { numerator, denominator };
+        
+                document.getElementById("fractionDisplay").innerHTML = `
+                    <div class="fraction">
+                        <span class="numerator">${numerator}</span>
+                        <span class="denominator">${denominator}</span>
+                    </div>
+                `;
+            }
+        
+            function selectFigure(figure) {
+                resetGameDisplay();
+        
+                selectedFigure = figure;
+                document.getElementById("selectedFigure").className = `figure ${figure}`;
+                document.getElementById("figureDisplay").style.display = 'block';
+        
+                clickSound.play(); // Reproducir sonido al seleccionar una figura
+            }
+        
+            function divideFigure() {
+                divideSound.play(); // Reproducir sonido al hacer clic en "Dividir"
+                
+                const denominator = document.getElementById("denominator").value;
+                
+                if (denominator != randomFraction.denominator) {
+                    attempts++;
+                    const remainingAttempts = 3 - attempts;
+                    if (remainingAttempts > 0) {
+                        alert(`Incorrecto. Tienes ${remainingAttempts} intento(s) más.`);
+                    } else {
+                        alert("Se han agotado los intentos, vuelve a intentarlo.");
+                        restartGame();
+                    }
+                    return;
+                }
+        
+                attempts = 0;
+        
+                const gridContainer = document.getElementById("gridContainer");
+                gridContainer.className = `figure-grid ${selectedFigure}`;
+                gridContainer.innerHTML = '';
+        
+                const rows = Math.ceil(Math.sqrt(denominator));
+                const cols = Math.ceil(denominator / rows);
+        
+                for (let i = 0; i < denominator; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('grid-cell');
+                    cell.addEventListener('click', () => {
+                        cell.classList.toggle('highlight');
+                        colorSound.play(); // Reproducir sonido al colorear una parte
+                    });
+                    gridContainer.appendChild(cell);
+                }
+        
+                gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        
+                document.getElementById("dividedFigure").style.display = 'block';
+            }
+        
+            function verify() {
+                const highlightedCells = document.querySelectorAll('.highlight').length;
+                attempts++;
+        
+                if (highlightedCells === randomFraction.numerator) { 
+                    correctSound.play(); // Reproducir sonido correcto
+                    alert(`¡Felicidades, lo has hecho muy bien!`);
+                } else if (attempts < 3) {
+                    incorrectSound.play(); // Reproducir sonido incorrecto
+                    alert(`Intenta de nuevo, has seleccionado ${highlightedCells} partes.`);
+                } else {
+                    incorrectSound.play(); // Reproducir sonido incorrecto al agotar intentos
+                    alert("Se han agotado los intentos, vuelve a intentarlo");
+                    restartGame();
+                }
+            }
+        
+            function resetGameDisplay() {
+                attempts = 0;
+                document.getElementById("denominator").value = '';
+                document.getElementById("figureDisplay").style.display = 'none';
+                document.getElementById("dividedFigure").style.display = 'none';
+                document.getElementById("gridContainer").innerHTML = '';
+            }
+        
+            function restartGame() {
+                restartSound.play(); // Reproducir sonido al hacer clic en "Volver a empezar"
+                resetGameDisplay();
+                generateRandomFraction();
+            }
+        
+            function goToHome() {
+                exitSound.play(); // Reproducir sonido al hacer clic en "Salir del juego"
+                
+                exitSound.onended = () => { // Esperar a que el sonido termine antes de redirigir
+                    const confirmExit = window.confirm("¿Quieres salir del juego?");
+                    if (confirmExit) {
+                        window.location.href = 'index.html';
+                    }
+                };
+            }
+        </script>
+    </div>
+</body>
+</html>
